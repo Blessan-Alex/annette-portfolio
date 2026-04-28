@@ -8,7 +8,7 @@ export interface ContentItem {
   tabName: 'Articles' | 'Journals' | 'Doodles';
   category?: string;
   thumbnail?: string;
-  renderContent: () => React.ReactNode;
+  renderContent?: () => React.ReactNode;
 }
 
 // Reusable UI components for content
