@@ -4,10 +4,15 @@ import { useState } from 'react'
 import { saveHomepageSettings } from './actions'
 import imageCompression from 'browser-image-compression'
 import { createClient } from '@/utils/supabase/client'
+import MiniEditor from '../../components/editor/MiniEditor'
+import { RESERVED_SLUGS, slugify } from '@/utils/navigation'
+import type { NavLink } from '@/utils/navigation'
 
-export default function HomepageEditor({ initialCards, initialMasonryItems, allContent }: any) {
+export default function HomepageEditor({ initialCards, initialMasonryItems, initialHeroParagraphs, initialNavLinks, allContent }: any) {
   const [cards, setCards] = useState(initialCards)
   const [masonryItems, setMasonryItems] = useState<string[]>(initialMasonryItems)
+  const [heroParagraphs, setHeroParagraphs] = useState<string[]>(initialHeroParagraphs)
+  const [navLinks, setNavLinks] = useState<NavLink[]>(initialNavLinks)
   const [uploadingImage, setUploadingImage] = useState<string | null>(null)
 
   const handleCardChange = (id: string, field: string, value: any) => {
@@ -62,6 +67,50 @@ export default function HomepageEditor({ initialCards, initialMasonryItems, allC
     <form action={saveHomepageSettings} className="flex flex-col gap-12">
       <input type="hidden" name="featured_cards" value={JSON.stringify(cards)} />
       <input type="hidden" name="masonry_items" value={JSON.stringify(masonryItems)} />
+      <input type="hidden" name="hero_paragraphs" value={JSON.stringify(heroParagraphs)} />
+      <input type="hidden" name="navigation_links" value={JSON.stringify(navLinks)} />
+
+      <section>
+        <h2 className="font-serif text-2xl text-on-surface mb-6 border-b border-neutral-100 pb-2">Hero Text</h2>
+        <div className="bg-white border border-neutral-200 rounded-2xl p-6 shadow-sm flex flex-col gap-4 max-w-2xl">
+          <div>
+            <div className="flex justify-between items-center mb-1">
+              <label className="font-sans font-medium text-neutral-800 text-sm">Paragraph 1</label>
+              <span className={`text-xs ${(heroParagraphs[0]?.length || 0) > 170 ? 'text-red-500' : 'text-neutral-400'}`}>{(heroParagraphs[0]?.replace(/<[^>]*>/g, '').length || 0)}/170</span>
+            </div>
+            <MiniEditor
+              maxLength={170}
+              value={heroParagraphs[0] || ''}
+              onChange={(v) => setHeroParagraphs(p => [v, p[1] || '', p[2] || ''])}
+              className="font-sans text-sm text-neutral-600"
+            />
+          </div>
+          <div>
+            <div className="flex justify-between items-center mb-1">
+              <label className="font-sans font-medium text-neutral-800 text-sm">Paragraph 2</label>
+              <span className={`text-xs ${(heroParagraphs[1]?.length || 0) > 100 ? 'text-red-500' : 'text-neutral-400'}`}>{(heroParagraphs[1]?.replace(/<[^>]*>/g, '').length || 0)}/100</span>
+            </div>
+            <MiniEditor
+              maxLength={100}
+              value={heroParagraphs[1] || ''}
+              onChange={(v) => setHeroParagraphs(p => [p[0] || '', v, p[2] || ''])}
+              className="font-sans text-sm text-neutral-600"
+            />
+          </div>
+          <div>
+            <div className="flex justify-between items-center mb-1">
+              <label className="font-sans font-medium text-neutral-800 text-sm">Paragraph 3</label>
+              <span className={`text-xs ${(heroParagraphs[2]?.length || 0) > 100 ? 'text-red-500' : 'text-neutral-400'}`}>{(heroParagraphs[2]?.replace(/<[^>]*>/g, '').length || 0)}/100</span>
+            </div>
+            <MiniEditor
+              maxLength={100}
+              value={heroParagraphs[2] || ''}
+              onChange={(v) => setHeroParagraphs(p => [p[0] || '', p[1] || '', v])}
+              className="font-sans text-sm text-neutral-600"
+            />
+          </div>
+        </div>
+      </section>
 
       <section>
         <h2 className="font-serif text-2xl text-on-surface mb-6 border-b border-neutral-100 pb-2">Featured Bento Cards</h2>
@@ -208,6 +257,77 @@ export default function HomepageEditor({ initialCards, initialMasonryItems, allC
               )}
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Navigation Editor */}
+      <section>
+        <h2 className="font-serif text-2xl text-on-surface mb-2 border-b border-neutral-100 pb-2">Navigation</h2>
+        <p className="font-sans text-sm text-neutral-500 mb-6">Edit navigation labels. Min 4, max 5 links. The first link is always your home page.</p>
+        <div className="bg-white border border-neutral-200 rounded-2xl p-6 shadow-sm max-w-2xl flex flex-col gap-3">
+          {navLinks.map((link, index) => {
+            const isHome = link.type === null;
+            const slug = isHome ? '' : slugify(link.label);
+            const isReserved = !isHome && RESERVED_SLUGS.includes(slug);
+            const contentCount = !isHome ? allContent.filter((c: any) => c.type === link.type).length : 0;
+            return (
+              <div key={link.id} className="flex items-center gap-3 p-3 bg-neutral-50 border border-neutral-100 rounded-xl">
+                <span className="font-mono text-[10px] text-neutral-400 w-4 shrink-0">{index + 1}.</span>
+                <input
+                  type="text"
+                  value={link.label}
+                  onChange={(e) => {
+                    const newLabel = e.target.value;
+                    setNavLinks(prev => prev.map((n, i) => {
+                      if (i !== index) return n;
+                      if (isHome) return { ...n, label: newLabel };
+                      const newSlug = slugify(newLabel);
+                      return { ...n, label: newLabel, path: `/${newSlug}s`, type: newSlug };
+                    }));
+                  }}
+                  className="flex-1 font-sans text-sm border border-neutral-200 rounded-lg px-3 py-1.5 outline-none focus:border-neutral-400"
+                />
+                {!isHome && (
+                  <span className="font-mono text-[10px] text-neutral-400 shrink-0">/{slug}s</span>
+                )}
+                {isHome && (
+                  <span className="font-mono text-[10px] text-neutral-400 shrink-0">/</span>
+                )}
+                {isReserved && (
+                  <span className="text-red-500 text-[10px] font-medium">Reserved!</span>
+                )}
+                {!isHome && navLinks.length > 4 && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (contentCount > 0) {
+                        alert(`Cannot delete "${link.label}". Move or delete ${contentCount} post(s) in this category first.`);
+                        return;
+                      }
+                      setNavLinks(prev => prev.filter((_, i) => i !== index));
+                    }}
+                    className="p-1 text-red-400 hover:text-red-600"
+                    title="Remove category"
+                  >
+                    <span className="material-symbols-outlined text-[16px]">close</span>
+                  </button>
+                )}
+              </div>
+            );
+          })}
+          {navLinks.length < 5 && (
+            <button
+              type="button"
+              onClick={() => {
+                const id = `custom-${Date.now()}`;
+                setNavLinks(prev => [...prev, { id, label: 'New Category', path: '/new-categorys', type: 'new-category' }]);
+              }}
+              className="flex items-center justify-center gap-2 p-3 border-2 border-dashed border-neutral-200 rounded-xl text-neutral-400 hover:text-neutral-600 hover:border-neutral-300 transition-colors"
+            >
+              <span className="material-symbols-outlined text-[16px]">add</span>
+              <span className="font-sans text-sm">Add Category (max 5)</span>
+            </button>
+          )}
         </div>
       </section>
 

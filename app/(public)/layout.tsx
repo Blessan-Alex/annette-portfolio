@@ -1,13 +1,15 @@
 import Navbar from "../components/Navbar";
+import { getNavLinks } from "@/utils/navigation.server";
 
-export default function PublicLayout({
+export default async function PublicLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const navLinks = await getNavLinks();
   return (
     <>
-      <Navbar />
+      <Navbar navLinks={navLinks} />
       <div className="flex-grow">
         {children}
       </div>

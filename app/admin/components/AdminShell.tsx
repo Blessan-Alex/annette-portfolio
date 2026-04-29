@@ -4,16 +4,15 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'motion/react'
+import type { NavLink } from '@/utils/navigation'
 
-const navItems = [
-  { name: 'Overview', path: '/admin', exact: true },
-  { name: 'Homepage', path: '/admin/homepage' },
-  { name: 'Articles', path: '/admin/articles' },
-  { name: 'Journals', path: '/admin/journals' },
-  { name: 'Doodles', path: '/admin/doodles' },
-]
-
-export default function AdminShell({ email, children }: { email: string; children: React.ReactNode }) {
+export default function AdminShell({ email, navLinks, children }: { email: string; navLinks: NavLink[]; children: React.ReactNode }) {
+  const categoryLinks = navLinks.filter(n => n.type !== null)
+  const sidebarItems = [
+    { name: 'Overview', path: '/admin', exact: true },
+    { name: 'Homepage', path: '/admin/homepage' },
+    ...categoryLinks.map(n => ({ name: n.label, path: `/admin/${n.path.replace('/', '')}` })),
+  ]
   const [collapsed, setCollapsed] = useState(false)
   const pathname = usePathname()
 
@@ -56,8 +55,8 @@ export default function AdminShell({ email, children }: { email: string; childre
 
               {/* Nav */}
               <nav className="flex flex-col gap-1.5 flex-grow">
-                {navItems.map(item => {
-                  const active = item.exact
+              {sidebarItems.map(item => {
+                  const active = (item as any).exact
                     ? pathname === item.path
                     : pathname.startsWith(item.path)
                   return (

@@ -1,5 +1,6 @@
 import { createClient } from '@/utils/supabase/server'
 import HomepageEditor from './HomepageEditor'
+import { getNavLinks } from '@/utils/navigation.server'
 
 export default async function HomepageSettingsPage() {
   const supabase = await createClient()
@@ -24,6 +25,12 @@ export default async function HomepageSettingsPage() {
 
   const featuredCards = settings?.featured_cards || defaultCards
   const masonryItems = settings?.masonry_items || []
+  const heroParagraphs = settings?.hero_paragraphs || [
+    "Hey there, I am Annette 👋 Welcome to my little corner of the internet 🌻 I like building creative things, and I am currently exploring the intersection of art and words.",
+    "In my free time, I enjoy whipping up spaghetti, avocado shakes and hitting the gym.",
+    "I also have a thing for holding onto the small things, the kind you tuck away and keep forever."
+  ]
+  const navLinks = await getNavLinks()
 
   return (
     <div className="w-full max-w-5xl mx-auto pb-48">
@@ -35,6 +42,8 @@ export default async function HomepageSettingsPage() {
       <HomepageEditor 
         initialCards={featuredCards} 
         initialMasonryItems={masonryItems} 
+        initialHeroParagraphs={heroParagraphs}
+        initialNavLinks={navLinks}
         allContent={allContent || []} 
       />
     </div>

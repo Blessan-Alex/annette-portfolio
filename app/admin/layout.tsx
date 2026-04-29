@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/utils/supabase/server'
 import AdminShell from './components/AdminShell'
+import { getNavLinks } from '@/utils/navigation.server'
 
 export default async function AdminLayout({
   children,
@@ -14,5 +15,7 @@ export default async function AdminLayout({
     redirect('/login')
   }
 
-  return <AdminShell email={user.email!}>{children}</AdminShell>
+  const navLinks = await getNavLinks()
+
+  return <AdminShell email={user.email!} navLinks={navLinks}>{children}</AdminShell>
 }

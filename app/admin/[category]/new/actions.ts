@@ -3,6 +3,7 @@
 import { createClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
+import { getNavLinks } from '@/utils/navigation.server'
 
 export async function saveArticle(formData: FormData) {
   const supabase = await createClient()
@@ -14,6 +15,13 @@ export async function saveArticle(formData: FormData) {
   const thumbnailUrl = (formData.get('thumbnail_url') as string) || null
   const id = formData.get('id') as string | null
   const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '')
+
+  // Validate type against active navigation categories
+  const navLinks = await getNavLinks()
+  const validTypes = navLinks.filter(n => n.type).map(n => n.type)
+  if (!validTypes.includes(type)) {
+    throw new Error(`Invalid content type: "${type}". Valid types: ${validTypes.join(', ')}`)
+  }
 
   const payload = {
     title,

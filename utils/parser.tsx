@@ -1,5 +1,5 @@
 import parse, { DOMNode, Element, attributesToProps, domToReact } from 'html-react-parser'
-import { Highlight, MarginaliaRight, MarginaliaLeft, Divider, TypewriterBlock, DoodleEnd } from '@/app/content'
+import { Highlight, MarginaliaRight, MarginaliaLeft, Divider, TypewriterBlock, DoodleEnd } from '@/app/components/ContentBlocks'
 
 export function parseContent(html: string) {
   const options = {

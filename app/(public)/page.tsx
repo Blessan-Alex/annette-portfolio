@@ -1,5 +1,8 @@
 import MasonryGrid from '../components/MasonryGrid';
+import Image from 'next/image';
 import { createClient } from '@/utils/supabase/server';
+import parse from 'html-react-parser';
+import { getNavLinks } from '@/utils/navigation.server';
 
 export default async function Home() {
   const supabase = await createClient();
@@ -9,6 +12,11 @@ export default async function Home() {
 
   const featuredCards = settings?.featured_cards || [];
   const masonryIds = settings?.masonry_items || [];
+  const heroParagraphs = settings?.hero_paragraphs || [
+    "Hey there, I am Annette 👋 Welcome to my little corner of the internet 🌻 I like building creative things, and I am currently exploring the intersection of art and words.",
+    "In my free time, I enjoy whipping up spaghetti, avocado shakes and hitting the gym.",
+    "I also have a thing for holding onto the small things, the kind you tuck away and keep forever."
+  ];
 
   // 2. Fetch all content explicitly ordered by masonry_items array
   let masonryContent = [];
@@ -33,6 +41,14 @@ export default async function Home() {
   const poetryCard = featuredCards.find((c: any) => c.type === 'poetry');
   const imageCard = featuredCards.find((c: any) => c.type === 'image');
   const journalCard = featuredCards.find((c: any) => c.type === 'journal');
+  
+  const cleanHtml = (html: string) => {
+    if (!html) return '';
+    return html.replace(/^<p>/, '').replace(/<\/p>$/, '');
+  };
+
+  const navLinks = await getNavLinks();
+
   return (
     <>
       <main className="flex flex-col md:flex-row min-h-screen max-w-[1600px] mx-auto">
@@ -40,13 +56,13 @@ export default async function Home() {
         <section className="w-full md:w-[50%] min-h-[70vh] md:min-h-screen md:sticky top-0 px-6 py-20 md:p-16 md:pt-28 flex flex-col justify-start bg-surface-bright overflow-y-auto">
           <div className="w-full max-w-2xl mx-auto md:mx-0 pb-16">
             <h1 className="font-display text-[31px] md:text-[37px] text-neutral-400 mb-10 leading-[1.1] [-word-spacing:-0.1em] font-light">
-              Hey there, I am <span className="text-neutral-900">Annette</span> 👋 Welcome to my <span className="underline decoration-dotted decoration-2 underline-offset-[8px] decoration-neutral-300">little corner of the internet</span> 🌻 I like building creative things, and I am currently exploring the intersection of <span className="text-neutral-900">art</span> and <span className="text-neutral-900">words</span>.
+              {parse(cleanHtml(heroParagraphs[0]))}
             </h1>
             <p className="font-display text-[31px] md:text-[37px] text-neutral-400 mb-10 leading-[1.1] [-word-spacing:-0.1em] font-light">
-              In my free time, I enjoy whipping up <span className="text-neutral-900">spaghetti</span>, avocado shakes and hitting the <span className="text-neutral-900">gym</span>.
+              {parse(cleanHtml(heroParagraphs[1]))}
             </p>
             <p className="font-display text-[31px] md:text-[37px] text-neutral-400 leading-[1.1] [-word-spacing:-0.1em] font-light">
-              I also have a thing for <span className="text-neutral-900">holding</span> onto the small things, the kind you tuck away and keep <span className="text-neutral-900">forever</span>.
+              {parse(cleanHtml(heroParagraphs[2]))}
             </p>
           </div>
         </section>
@@ -96,10 +112,13 @@ export default async function Home() {
             {imageCard && (
               <div className="bento-card border border-neutral-100 shadow-sm col-span-1 min-h-[300px] relative group overflow-hidden bg-neutral-50">
                 {imageCard.image_url && (
-                  <img 
+                  <Image 
                     alt={imageCard.label} 
                     className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
                     src={imageCard.image_url} 
+                    fill
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                    priority
                   />
                 )}
                 <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors duration-500"></div>
@@ -144,7 +163,7 @@ export default async function Home() {
               title: item.title,
               subtext: item.subtext,
               date: new Date(item.published_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-              tabName: item.type === 'article' ? 'Articles' : item.type === 'journal' ? 'Journals' : 'Doodles',
+              tabName: (() => { const n = navLinks.find(l => l.type === item.type); return n ? n.label : item.type; })(),
               category: item.category,
               thumbnail: item.thumbnail_url,
             }))} 

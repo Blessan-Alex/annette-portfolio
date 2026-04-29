@@ -1,17 +1,21 @@
 import Link from 'next/link';
-import { ContentItem } from '../content';
+import Image from 'next/image';
+import { ContentItem } from '../../utils/types';
 
-function MasonryCard({ item }: { item: ContentItem }) {
+function MasonryCard({ item, priority = false }: { item: ContentItem; priority?: boolean }) {
   const href = `/${item.tabName.toLowerCase()}/${item.id}`;
 
   if (item.thumbnail) {
     return (
       <div className="mb-4 md:mb-6 break-inside-avoid">
         <Link href={href} className="bento-card border border-neutral-100 shadow-sm min-h-[400px] relative group overflow-hidden cursor-pointer bg-white block">
-          <img 
+          <Image 
             alt={item.title} 
             className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
             src={item.thumbnail} 
+            fill
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+            priority={priority}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
           <div className="absolute top-6 left-6 right-6 flex justify-between items-start opacity-0 group-hover:opacity-100 transition-opacity duration-300">
@@ -49,8 +53,8 @@ function MasonryCard({ item }: { item: ContentItem }) {
 export default function MasonryGrid({ items }: { items: ContentItem[] }) {
   return (
     <div className="columns-1 md:columns-2 lg:columns-3 xl:columns-4 gap-4 md:gap-6">
-      {items.map(item => (
-        <MasonryCard key={item.id} item={item} />
+      {items.map((item, index) => (
+        <MasonryCard key={item.id} item={item} priority={index < 4} />
       ))}
     </div>
   );

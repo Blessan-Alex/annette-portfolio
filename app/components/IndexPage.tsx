@@ -1,5 +1,5 @@
 import MasonryGrid from './MasonryGrid';
-import { ContentItem } from '../content';
+import { ContentItem } from '../../utils/types';
 
 export default function IndexPage({ title, subtext, items }: { title: string, subtext: string, items: ContentItem[] }) {
   const formattedTitle = title.toLowerCase() + ".";
