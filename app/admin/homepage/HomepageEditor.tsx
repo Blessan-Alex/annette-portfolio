@@ -191,13 +191,23 @@ export default function HomepageEditor({ initialCards, initialMasonryItems, init
                   />
                 )}
                 {card.type === 'prose' && (
-                  <input 
-                    type="text" 
-                    value={card.link_url || ''} 
-                    onChange={e => handleCardChange(card.id, 'link_url', e.target.value)} 
-                    placeholder="Link URL (e.g. /articles/slug)"
-                    className="font-sans text-xs text-blue-500 border-none outline-none placeholder-neutral-300 w-full"
-                  />
+                  <select
+                    value={card.link_url || ''}
+                    onChange={e => handleCardChange(card.id, 'link_url', e.target.value)}
+                    className="font-sans text-xs text-blue-500 border border-neutral-200 rounded-lg px-2 py-1.5 outline-none focus:border-neutral-400 w-full bg-white"
+                  >
+                    <option value="">— No link —</option>
+                    {allContent.map((c: any) => {
+                      const navLink = navLinks.find(n => n.type === c.type);
+                      const basePath = navLink ? navLink.path : `/${c.type}s`;
+                      const url = `${basePath}/${c.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '')}`;
+                      return (
+                        <option key={c.id} value={url}>
+                          {c.title} ({navLink?.label || c.type})
+                        </option>
+                      );
+                    })}
+                  </select>
                 )}
               </div>
             </div>
@@ -282,7 +292,9 @@ export default function HomepageEditor({ initialCards, initialMasonryItems, init
                       if (i !== index) return n;
                       if (isHome) return { ...n, label: newLabel };
                       const newSlug = slugify(newLabel);
-                      return { ...n, label: newLabel, path: `/${newSlug}s`, type: newSlug };
+                      // If the slug ends with 's', use it directly; otherwise we keep it as is.
+                      // Since users usually type plural names like "Photos", slugify handles it.
+                      return { ...n, label: newLabel, path: `/${newSlug}`, type: newSlug };
                     }));
                   }}
                   className="flex-1 font-sans text-sm border border-neutral-200 rounded-lg px-3 py-1.5 outline-none focus:border-neutral-400"
@@ -320,7 +332,7 @@ export default function HomepageEditor({ initialCards, initialMasonryItems, init
               type="button"
               onClick={() => {
                 const id = `custom-${Date.now()}`;
-                setNavLinks(prev => [...prev, { id, label: 'New Category', path: '/new-categorys', type: 'new-category' }]);
+                setNavLinks(prev => [...prev, { id, label: 'New Category', path: '/new-category', type: 'new-category' }]);
               }}
               className="flex items-center justify-center gap-2 p-3 border-2 border-dashed border-neutral-200 rounded-xl text-neutral-400 hover:text-neutral-600 hover:border-neutral-300 transition-colors"
             >
