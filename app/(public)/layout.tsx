@@ -19,9 +19,6 @@ export default async function PublicLayout({
           <a className="text-neutral-400 dark:text-neutral-500 hover:text-neutral-600 dark:hover:text-neutral-300 opacity-80 hover:opacity-100 transition-opacity" href="#">Terms</a>
           <a className="text-neutral-400 dark:text-neutral-500 hover:text-neutral-600 dark:hover:text-neutral-300 opacity-80 hover:opacity-100 transition-opacity" href="/login">Admin</a>
         </div>
-        <p className="font-serif text-sm tracking-wide text-neutral-900 dark:text-neutral-100 opacity-80 hover:opacity-100 transition-opacity">
-          © 2024 Amelia. All thoughts preserved.
-        </p>
       </footer>
     </>
   );
